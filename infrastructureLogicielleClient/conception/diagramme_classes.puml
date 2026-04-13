@@ -1,0 +1,52 @@
+@startuml diagramme_classes
+
+skinparam classAttributeIconSize 0
+skinparam packageStyle rectangle
+
+package "opinion" {
+
+    interface ISocialNetwork {
+        + nbMembers() : int
+        + nbFilms() : int
+        + nbBooks() : int
+        + addMember(login : String, password : String, profile : String) : void
+        + addItemFilm(login : String, password : String, title : String, kind : String, director : String, scenarist : String, duration : int) : void
+        + addItemBook(login : String, password : String, title : String, kind : String, author : String, nbPages : int) : void
+        + reviewItemFilm(login : String, password : String, title : String, mark : float, comment : String) : float
+        + reviewItemBook(login : String, password : String, title : String, mark : float, comment : String) : float
+        + consultItems(title : String) : LinkedList<String>
+        + toString() : String
+    }
+
+    class SocialNetwork {
+        - members : LinkedList<Member>
+        + nbMembers() : int
+        + nbFilms() : int
+        + nbBooks() : int
+        + addMember(login : String, password : String, profile : String) : void
+        + toString() : String
+    }
+
+    class Member {
+        - login : String
+        - password : String
+        - profile : String
+        + getLogin() : String
+        + getPassword() : String
+        + getProfile() : String
+    }
+
+}
+
+package "exceptions" {
+    class BadEntryException
+    class MemberAlreadyExistsException
+}
+
+SocialNetwork ..|> ISocialNetwork
+SocialNetwork "1" *-- "0..*" Member : members
+
+SocialNetwork ..> BadEntryException : throws
+SocialNetwork ..> MemberAlreadyExistsException : throws
+
+@enduml
