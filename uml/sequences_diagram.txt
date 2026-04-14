@@ -1,0 +1,80 @@
+@startuml diagramme_sequence
+
+skinparam sequenceMessageAlign center
+skinparam responseMessageBelowArrow true
+
+' ============================================================
+' Participants
+' ============================================================
+participant "Caller\n(Test / Main)" as Caller
+participant "SocialNetwork"         as SN
+participant "Member (existing)"     as ME
+participant "Member (new)"          as MN
+
+' ============================================================
+' SECTION 1 : Adding a member — nominal case
+' ============================================================
+== addMember() — Nominal case ==
+
+Caller -> SN : addMember("alice", "s3cr3t", "Cinephile")
+activate SN
+
+    ' --- Input parameter validation ---
+    note over SN
+        Check: login not null and length >= 1
+        Check: password not null and length >= 4
+        Check: profile not null
+    end note
+
+    ' --- Iterate over the list to detect a duplicate ---
+    loop for each Member m in members
+        SN -> ME : getLogin()
+        activate ME
+        ME --> SN : "bob"
+        deactivate ME
+        note right of SN : "alice".equalsIgnoreCase("bob") → false\nContinue the loop
+    end
+
+    ' --- No duplicate: create the new member ---
+    SN -> MN ** : new Member("alice", "s3cr3t", "Cinephile")
+    activate MN
+    note right of MN : Constructor stores\nlogin, password, profile
+    MN --> SN : (instance created)
+    deactivate MN
+
+    ' --- Add to the internal list ---
+    note over SN : members.add(newMember)
+
+SN --> Caller : (void — success)
+deactivate SN
+
+
+' ============================================================
+' SECTION 4 : Network state inspection (toString)
+' ============================================================
+== toString() — Display network state ==
+
+Caller -> SN : toString()
+activate SN
+
+    SN -> SN : nbMembers()
+    note right of SN : returns members.size()
+
+    SN -> SN : nbFilms()
+    note right of SN : returns 0 (TODO)
+
+    SN -> SN : nbBooks()
+    note right of SN : returns 0 (TODO)
+
+    ' --- Iterate over members to build the string ---
+    loop for each Member m in members
+        SN -> MN : getLogin()
+        activate MN
+        MN --> SN : "alice"
+        deactivate MN
+    end
+
+SN --> Caller : "SocialNetwork : [1 member(s), 0 film(s), 0 book(s)]\nMembers : alice "
+deactivate SN
+
+@enduml
