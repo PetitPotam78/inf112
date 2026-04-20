@@ -21,7 +21,8 @@ activate SN
 
     ' --- Input parameter validation ---
     note over SN
-        Check: login not null and length >= 1
+        Check: login n
+        ot null and length >= 1
         Check: password not null and length >= 4
         Check: profile not null
     end note

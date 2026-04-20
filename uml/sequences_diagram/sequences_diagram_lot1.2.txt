@@ -1,0 +1,113 @@
+@startuml diagramme_sequence
+
+skinparam sequenceMessageAlign center
+skinparam responseMessageBelowArrow true
+
+' ============================================================
+' Participants
+' ============================================================
+participant "Caller\n(Test / Main)" as Caller
+participant "SocialNetwork"         as SN
+participant "Member (existing)"     as ME
+participant "Book (existing)"       as BE
+participant "Book (new)"            as BN
+
+' ============================================================
+' SECTION 1 : Adding a book — nominal case
+' ============================================================
+== addItemBook() — Nominal case ==
+
+Caller -> SN : addItemBook("alice", "s3cr3t",\n"Dune", "SF", "Herbert", 680)
+activate SN
+
+    ' --- Input parameter validation ---
+    SN -> SN : loginCheck("alice", "s3cr3t")
+    note right of SN
+        Check: login not null and length >= 1
+        Check: password not null and length >= 4
+    end note
+
+    SN -> SN : bookCheck("Dune", "SF", "Herbert", 680)
+    note right of SN
+        Check: title not null and length >= 1
+        Check: kind not null
+        Check: author not null
+        Check: nbPages > 0
+    end note
+
+    ' --- Member authentication ---
+    loop for each Member m in members
+        SN -> ME : matches("alice", "s3cr3t")
+        activate ME
+        ME --> SN : true
+        deactivate ME
+    end
+    note right of SN : memberFound = true
+
+    ' --- Duplicate book detection ---
+    loop for each Book b in books
+        SN -> BE : hasSameTitleAs("Dune")
+        activate BE
+        note right of BE : "Foundation".trim()\n.equalsIgnoreCase("Dune".trim())\n→ false
+        BE --> SN : false
+        deactivate BE
+    end
+
+    ' --- No duplicate: create the new book ---
+    SN -> BN ** : new Book("Dune", "SF", "Herbert", 680)
+    activate BN
+    note right of BN : Constructor stores\ntitle, kind, author, nbPages
+    BN --> SN : (instance created)
+    deactivate BN
+
+    ' --- Add to the internal list ---
+    note over SN : books.add(newBook)
+
+SN --> Caller : (void — success)
+deactivate SN
+
+' ============================================================
+' SECTION 3 : Counting books (nbBooks)
+' ============================================================
+== nbBooks() — Count books ==
+
+Caller -> SN : nbBooks()
+activate SN
+    note right of SN : returns books.size()
+SN --> Caller : 1
+deactivate SN
+
+
+' ============================================================
+' SECTION 4 : Network state inspection (toString)
+' ============================================================
+== toString() — Display network state ==
+
+Caller -> SN : toString()
+activate SN
+
+    SN -> SN : nbMembers()
+    SN -> SN : nbFilms()
+    SN -> SN : nbBooks()
+    note right of SN : returns books.size()
+
+    ' --- Iterate over members ---
+    loop for each Member m in members
+        SN -> ME : getLogin()
+        activate ME
+        ME --> SN : "alice"
+        deactivate ME
+    end
+
+    ' --- Iterate over books to build the string ---
+    loop for each Book b in books
+        SN -> BE : getTitle()
+        activate BE
+        BE --> SN : "Dune"
+        deactivate BE
+    end
+
+SN --> Caller : "SocialNetwork : [1 membre(s), 0 movie(s), 1 book(s)]\nMembres : alice Books : Dune "
+deactivate SN
+
+@enduml
