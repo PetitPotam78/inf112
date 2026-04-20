@@ -1,13 +1,13 @@
 /**
- * Core domain package for the SocialNetwork application.
+ * Main package of the SocialNetwork application.
  *
- * <p>Responsibilities:
- * <ul>
- *   <li>Define the {@link opinion.ISocialNetwork} contract.</li>
- *   <li>Implement member management: registration, login/password validation.</li>
- *   <li>Implement item management: adding books and films, enforcing uniqueness.</li>
- *   <li>Implement review management: recording marks and computing average ratings.</li>
- *   <li>Provide item search via {@code consultItems}.</li>
- * </ul>
+ * This package contains the core of the social network :
+ *   - ISocialNetwork : the interface that defines what the social network must do (the contract)
+ *   - SocialNetwork  : the class that implementes this contract (the realisation)
+ *   - Member         : represents a registred member
+ *   - Book           : represents a book added to the network
+ *
+ * We separate the interface from the implementation (rule Pj4) so we can
+ * change the realisation without breaking the rest of the code.
  */
 package opinion;

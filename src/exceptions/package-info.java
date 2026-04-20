@@ -1,14 +1,13 @@
 /**
  * Custom exceptions for the SocialNetwork application.
  *
- * <p>Responsibilities:
- * <ul>
- *   <li>{@code BadEntryException} – signals an invalid method parameter (null, blank, out of range).</li>
- *   <li>{@code MemberAlreadyExistsException} – signals a duplicate member login.</li>
- *   <li>{@code NotMemberException} – signals that no member matches the given credentials.</li>
- *   <li>{@code ItemBookAlreadyExistsException} – signals a duplicate book title.</li>
- *   <li>{@code ItemFilmAlreadyExistsException} – signals a duplicate film title.</li>
- *   <li>{@code NotItemException} – signals that a requested item does not exist.</li>
- * </ul>
+ * Each exception has one precise responsability (rule Po2) :
+ *   - BadEntryException              : a parameter passed as argument is invalid (null, blank, out of range)
+ *   - MemberAlreadyExistsException   : trying to add a member whose login is already taken
+ *   - NotMemberException             : the login/password does not match any registred member
+ *   - ItemBookAlreadyExistsException : trying to add a book whose title already exists
+ *   - ItemFilmAlreadyExistsException : trying to add a film whose title already exists
+ *   - NotItemException               : the requested item does not exist in the network
+ *   - NotTestReportException         : the values passed to TestReport are inconsistant
  */
 package exceptions;

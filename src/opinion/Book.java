@@ -1,44 +1,66 @@
 package opinion;
 
 /**
- * Represents a book of the SocialNetwork.
+ * Represents a book in the social network.
+ *
+ * This class only stores the informations of a book.
+ * It has no buisness logic - SocialNetwork handles the rules
+ * (no duplicates, field validation, etc).
+ *
+ * Attributes :
+ *   - title   : the book title (unique identifier in the network)
+ *   - kind    : the book genre (novel, SF, thriller, etc)
+ *   - author  : the book author
+ *   - nbPages : the number of pages (strictly positive)
  */
-
 public class Book {
 
-    private String title;
-    private String kind;
-    private String author;
-    private int nbPages;
+	/** Title of the book, serves as unique identifier in the network */
+	private String title;
 
-    /**
-     * @param title the book's title
-     * @param kind the book's kind
-     * @param author the book's author
-     * @param nbPages the book's pages number
-     */
+	/** Genre of the book (novel, SF, thriller...), never null */
+	private String kind;
 
-    Book(String title, String kind, String author, int nbPages) {
-        this.title = title;
-        this.kind = kind;
-        this.author = author;
-        this.nbPages = nbPages;
-    }
+	/** Name of the author, never null */
+	private String author;
 
-    public String getTitle() {
-        return this.title;
-    }
+	/** Number of pages, always strictly positive */
+	private int nbPages;
 
-    public String getKind() {
-        return this.kind;
-    }
+	/**
+	 * Creates a new book with all its informations.
+	 * Parameters must have been validated before calling this constructor.
+	 *
+	 * @param title   the book title
+	 * @param kind    the book genre
+	 * @param author  the book author
+	 * @param nbPages the number of pages
+	 */
+	Book(String title, String kind, String author, int nbPages) {
+		this.title = title;
+		this.kind = kind;
+		this.author = author;
+		this.nbPages = nbPages;
+	}
 
-    public String getAuthor() {
-        return this.author;
-    }
+	/** @return the book title */
+	public String getTitle() {
+		return this.title;
+	}
 
-    public int getNbPages() {
-        return this.nbPages;
-    }
-    
+	/** @return the book genre */
+	public String getKind() {
+		return this.kind;
+	}
+
+	/** @return the book author */
+	public String getAuthor() {
+		return this.author;
+	}
+
+	/** @return the number of pages */
+	public int getNbPages() {
+		return this.nbPages;
+	}
+
 }

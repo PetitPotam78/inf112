@@ -11,14 +11,28 @@ import exceptions.NotItemException;
 import exceptions.NotMemberException;
 
 /**
- * Implementation of ISocialNetwork managing members, books and films.
+ * Implementation of ISocialNetwork that manages members, books and films.
+ *
+ * This is the main class of the social network. It stores the data
+ * and checks that everything we give it is valid before saving it.
+ *
+ * Responsabilities of this class :
+ *   - manage members (adding, checking for duplicates)
+ *   - manage books (adding, checking for duplicates)
+ *   - validate all incomming parameters before any operation
  */
 public class SocialNetwork implements ISocialNetwork {
 
-	/** Registered members of the social network. */
+	// we use constants to avoid "magic numbers" in the code (rule P13)
+	// this way if we want to change the min length of a login or password,
+	// we only have to change it in one place
+	private static final int MIN_LOGIN_LENGTH = 1;
+	private static final int MIN_PASSWORD_LENGTH = 4;
+
+	/** List of members registred in the social network, never null */
 	private List<Member> members = new LinkedList<Member>();
 
-	/** Books added to the social network. */
+	/** List of books added to the social network, never null */
 	private List<Book> books = new LinkedList<Book>();
 
 	@Override
@@ -28,7 +42,7 @@ public class SocialNetwork implements ISocialNetwork {
 
 	@Override
 	public int nbFilms() {
-		// TODO Auto-generated method stub
+		// TODO : films are not implementd yet
 		return 0;
 	}
 
@@ -37,77 +51,120 @@ public class SocialNetwork implements ISocialNetwork {
 		return books.size();
 	}
 
+	/**
+	 * Checks that the login and password respect the basic rules.
+	 *
+	 * We put this in a seperate method to avoid repeating the same code
+	 * in addMember and addItemBook (rule P8 - write a piece of code only once).
+	 *
+	 * @param login    the login to check, must have at least 1 non-space character
+	 * @param password the password to check, must have at least 4 non-space characters
+	 * @throws BadEntryException if login or password is invalid
+	 */
 	public void loginCheck(String login, String password) throws BadEntryException {
-		if (login == null || login.trim().length() < 1)
+		// login must exist and have at least one real character (not just spaces)
+		if (login == null || login.trim().length() < MIN_LOGIN_LENGTH) {
 			throw new BadEntryException("invalid login");
-		if (password == null || password.trim().length() < 4)
+		}
+		// password must have at least 4 characters, spaces at the start/end dont count
+		if (password == null || password.trim().length() < MIN_PASSWORD_LENGTH) {
 			throw new BadEntryException("invalid password");
+		}
 	}
 
-	public void bookCheck(String title, String kind, String author, int nbPages) throws BadEntryException{
-		if (title == null || title.trim().length() < 1)
+	/**
+	 * Checks that the book informations are complete and valid.
+	 *
+	 * Same idea as loginCheck : we group the validation here
+	 * so we dont have to duplicat it in multiple places (rule P8).
+	 *
+	 * @param title   the book title, must have at least 1 non-space character
+	 * @param kind    the book genre, cannot be null
+	 * @param author  the author, cannot be null
+	 * @param nbPages the number of pages, must be strictly positive
+	 * @throws BadEntryException if any of the fields is invalid
+	 */
+	public void bookCheck(String title, String kind, String author, int nbPages) throws BadEntryException {
+		if (title == null || title.trim().length() < MIN_LOGIN_LENGTH) {
 			throw new BadEntryException("invalid title");
-		if (kind == null)
+		}
+		if (kind == null) {
 			throw new BadEntryException("invalid kind");
-		if (author == null)
+		}
+		if (author == null) {
 			throw new BadEntryException("invalid author");
-		if (nbPages <= 0)
+		}
+		// number of pages must be strictly positive, a book with 0 pages doesn't make sense
+		if (nbPages <= 0) {
 			throw new BadEntryException("invalid number of pages");
+		}
 	}
 
 	/**
 	 * Adds a new member after validating login, password and profile,
-	 * and checking no member with the same login already exists.
+	 * and checking that no member with the same login already exists.
 	 */
 	@Override
 	public void addMember(String login, String password, String profile)
 			throws BadEntryException, MemberAlreadyExistsException {
-		// Checking login
-		loginCheck(login, password);	
-		if (profile == null)
+		// first we validate the basic parameters
+		loginCheck(login, password);
+		if (profile == null) {
 			throw new BadEntryException("invalid profil");
-		// Reject duplicate logins (case-insensitive)
-		for (Member m : members) {
-			if (login.trim().equalsIgnoreCase(m.getLogin().trim()))
-				throw new MemberAlreadyExistsException();
 		}
+		// we go through all members to check that the login is not already taken
+		// the comparison is case-insensitive and ignores leading/trailing spaces
+		for (Member m : members) {
+			if (login.trim().equalsIgnoreCase(m.getLogin().trim())) {
+				throw new MemberAlreadyExistsException();
+			}
+		}
+		// everything is valid, we can create and add the new member
 		members.add(new Member(login, password, profile));
 	}
 
 	@Override
-	public void addItemFilm(String login, String password, String title, String kind, String director, String scenarist, int duration)
-			throws BadEntryException, NotMemberException,
-			ItemFilmAlreadyExistsException {
-		// TODO Auto-generated method stub
-
+	public void addItemFilm(String login, String password, String title, String kind, String director,
+			String scenarist, int duration)
+			throws BadEntryException, NotMemberException, ItemFilmAlreadyExistsException {
+		// TODO : this method is not implementd yet
 	}
 
 	/**
 	 * Adds a new book after validating all parameters, authenticating the member,
-	 * and checking no book with the same title already exists.
+	 * and checking that no book with the same title already exists.
 	 */
 	@Override
 	public void addItemBook(String login, String password, String title,
 			String kind, String author, int nbPages) throws BadEntryException,
 			NotMemberException, ItemBookAlreadyExistsException {
 
-		boolean exist = false;
-
+		// validate all parameters before doing anything else
 		loginCheck(login, password);
 		bookCheck(title, kind, author, nbPages);
-		// Check that the login/password pair matches a registered member
+
+		// check that a member with this exact login and password exists
+		// if we dont find the pair, we throw a NotMember exception
+		boolean memberFound = false;
 		for (Member m : members) {
 			if (login.trim().equalsIgnoreCase(m.getLogin().trim())
-			&& password.trim().equalsIgnoreCase(m.getPassword().trim()))
-				exist = true;
+					&& password.trim().equalsIgnoreCase(m.getPassword().trim())) {
+				memberFound = true;
+			}
 		}
-		if (!exist)
+		if (!memberFound) {
 			throw new NotMemberException("user do not exist");
-		// Reject duplicate book titles (case-insensitive)
-		for (Book b : books) {
-			if (title.trim().equalsIgnoreCase(b.getTitle().trim()))
-				throw new ItemBookAlreadyExistsException();
 		}
+
+		// check that no book with the same title is already in the network
+		// comparison ignores case and extra spaces to avoid hidden duplicates
+		for (Book b : books) {
+			if (title.trim().equalsIgnoreCase(b.getTitle().trim())) {
+				throw new ItemBookAlreadyExistsException();
+			}
+		}
+
+		// everything is valid, we can add the book
 		books.add(new Book(title, kind, author, nbPages));
 	}
 
@@ -115,7 +172,7 @@ public class SocialNetwork implements ISocialNetwork {
 	public float reviewItemFilm(String login, String password, String title,
 			float mark, String comment) throws BadEntryException,
 			NotMemberException, NotItemException {
-		// TODO Auto-generated method stub
+		// TODO : film reviews are not implementd yet
 		return 0;
 	}
 
@@ -123,16 +180,20 @@ public class SocialNetwork implements ISocialNetwork {
 	public float reviewItemBook(String login, String password, String title,
 			float mark, String comment) throws BadEntryException,
 			NotMemberException, NotItemException {
-		// TODO Auto-generated method stub
+		// TODO : book reviews are not implementd yet
 		return 0;
 	}
 
 	@Override
-	public LinkedList<String> consultItems(String title)
-			throws BadEntryException {
+	public LinkedList<String> consultItems(String title) throws BadEntryException {
+		// TODO : item search is not implementd yet
 		return new LinkedList<String>();
 	}
 
+	/**
+	 * Returns a summary of the social network : number of members, films, books and their names.
+	 * Usefull for debuging and quickly checking the state of the network.
+	 */
 	@Override
 	public String toString() {
 		String s = "SocialNetwork : [" + nbMembers() + " membre(s), "
@@ -149,11 +210,11 @@ public class SocialNetwork implements ISocialNetwork {
 	}
 
 	/**
-	 * @param args
+	 * Main entry point - not used directly, run SocialNetworkTest instead.
+	 * @param args not used
 	 */
 	public static void main(String[] args) {
-		// TODO Auto-generated method stub
-
+		// TODO : use SocialNetworkTest to run the tests
 	}
 
 }
