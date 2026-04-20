@@ -94,6 +94,7 @@ public class SocialNetwork implements ISocialNetwork {
 		boolean exist = false;
 
 		loginCheck(login, password);
+		bookCheck(title, kind, author, nbPages);
 		// Check that the login/password pair matches a registered member
 		for (Member m : members) {
 			if (login.trim().equalsIgnoreCase(m.getLogin().trim())
