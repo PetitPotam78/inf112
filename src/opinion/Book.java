@@ -4,8 +4,6 @@ package opinion;
  * Represents a book in the social network.
  *
  * This class only stores the informations of a book.
- * It has no buisness logic - SocialNetwork handles the rules
- * (no duplicates, field validation, etc).
  *
  * Attributes :
  *   - title   : the book title (unique identifier in the network)

@@ -13,11 +13,6 @@ import exceptions.NotMemberException;
 /**
  * Implementation of ISocialNetwork that manages members, books and films.
  *
- * This class applies the Single Responsability Principle (SRP) :
- * its only job is to orchestrate the collections of members and books
- * (add, lookup, count). It does NOT know how a member or a book
- * compares itself to others - that knowledge belongs to Member and Book
- * (see Member.matches and Book.hasSameTitleAs).
  *
  * Responsabilities of this class :
  *   - manage members (adding, checking for duplicates)
