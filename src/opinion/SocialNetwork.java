@@ -1,6 +1,7 @@
 package opinion;
 
 import java.util.LinkedList;
+import java.util.List;
 
 import exceptions.BadEntryException;
 import exceptions.ItemBookAlreadyExistsException;
@@ -10,12 +11,15 @@ import exceptions.NotItemException;
 import exceptions.NotMemberException;
 
 /**
- * Skeleton for the SocialNetwork
- * 
+ * Implementation of ISocialNetwork managing members, books and films.
  */
 public class SocialNetwork implements ISocialNetwork {
 
-	private LinkedList<Member> members = new LinkedList<Member>();
+	/** Registered members of the social network. */
+	private List<Member> members = new LinkedList<Member>();
+
+	/** Books added to the social network. */
+	private List<Book> books = new LinkedList<Book>();
 
 	@Override
 	public int nbMembers() {
@@ -30,19 +34,39 @@ public class SocialNetwork implements ISocialNetwork {
 
 	@Override
 	public int nbBooks() {
-		// TODO Auto-generated method stub
-		return 0;
+		return books.size();
 	}
 
+	public void loginCheck(String login, String password) throws BadEntryException {
+		if (login == null || login.trim().length() < 1)
+			throw new BadEntryException("invalid login");
+		if (password == null || password.trim().length() < 4)
+			throw new BadEntryException("invalid password");
+	}
+
+	public void bookCheck(String title, String kind, String author, int nbPages) throws BadEntryException{
+		if (title == null || title.trim().length() < 1)
+			throw new BadEntryException("invalid title");
+		if (kind == null)
+			throw new BadEntryException("invalid kind");
+		if (author == null)
+			throw new BadEntryException("invalid author");
+		if (nbPages <= 0)
+			throw new BadEntryException("invalid number of pages");
+	}
+
+	/**
+	 * Adds a new member after validating login, password and profile,
+	 * and checking no member with the same login already exists.
+	 */
 	@Override
 	public void addMember(String login, String password, String profile)
 			throws BadEntryException, MemberAlreadyExistsException {
-		if (login == null || login.trim().length() < 1)
-			throw new BadEntryException("login invalide");
-		if (password == null || password.trim().length() < 4)
-			throw new BadEntryException("password invalide");
+		// Checking login
+		loginCheck(login, password);	
 		if (profile == null)
-			throw new BadEntryException("profile invalide");
+			throw new BadEntryException("invalid profil");
+		// Reject duplicate logins (case-insensitive)
 		for (Member m : members) {
 			if (login.trim().equalsIgnoreCase(m.getLogin().trim()))
 				throw new MemberAlreadyExistsException();
@@ -51,20 +75,39 @@ public class SocialNetwork implements ISocialNetwork {
 	}
 
 	@Override
-	public void addItemFilm(String login, String password, String title,
-			String kind, String director, String scenarist, int duration)
+	public void addItemFilm(String login, String password, String title, String kind, String director, String scenarist, int duration)
 			throws BadEntryException, NotMemberException,
 			ItemFilmAlreadyExistsException {
 		// TODO Auto-generated method stub
 
 	}
 
+	/**
+	 * Adds a new book after validating all parameters, authenticating the member,
+	 * and checking no book with the same title already exists.
+	 */
 	@Override
 	public void addItemBook(String login, String password, String title,
 			String kind, String author, int nbPages) throws BadEntryException,
 			NotMemberException, ItemBookAlreadyExistsException {
-		// TODO Auto-generated method stub
 
+		boolean exist = false;
+
+		loginCheck(login, password);
+		// Check that the login/password pair matches a registered member
+		for (Member m : members) {
+			if (login.trim().equalsIgnoreCase(m.getLogin().trim())
+			&& password.trim().equalsIgnoreCase(m.getPassword().trim()))
+				exist = true;
+		}
+		if (!exist)
+			throw new NotMemberException("user do not exist");
+		// Reject duplicate book titles (case-insensitive)
+		for (Book b : books) {
+			if (title.trim().equalsIgnoreCase(b.getTitle().trim()))
+				throw new ItemBookAlreadyExistsException();
+		}
+		books.add(new Book(title, kind, author, nbPages));
 	}
 
 	@Override
@@ -92,10 +135,14 @@ public class SocialNetwork implements ISocialNetwork {
 	@Override
 	public String toString() {
 		String s = "SocialNetwork : [" + nbMembers() + " membre(s), "
-				+ nbFilms() + " film(s), " + nbBooks() + " livre(s)]\n";
+				+ nbFilms() + " movie(s), " + nbBooks() + " book(s)]\n";
 		s += "Membres : ";
 		for (Member m : members) {
 			s += m.getLogin() + " ";
+		}
+		s += "Books : ";
+		for (Book b : books) {
+			s += b.getTitle() + " ";
 		}
 		return s;
 	}

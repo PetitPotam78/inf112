@@ -19,11 +19,11 @@ package "opinion" {
     }
 
     class SocialNetwork {
-        - members : LinkedList<Member>
         + nbMembers() : int
         + nbFilms() : int
         + nbBooks() : int
         + addMember(login : String, password : String, profile : String) : void
+        + addItemBook(login : String, password : String, title: String, kind : String, author : String, nbPages : int)
         + toString() : String
     }
 
@@ -36,17 +36,32 @@ package "opinion" {
         + getProfile() : String
     }
 
+    class Book {
+        - title : String
+        - kind : String
+        - author : String
+        - nbPages : int
+        + getTitle() : String
+        + getKind() : String
+        + getAuthor() : String
+        + getNbPages() : int
+    }
+
 }
 
 package "exceptions" {
     class BadEntryException
     class MemberAlreadyExistsException
+    class ItemBookAlreadyExistsException
 }
 
 SocialNetwork ..|> ISocialNetwork
 SocialNetwork "1" *-- "0..*" Member : members
 
+SocialNetwork "1" *-- "0..*" Book : books
+
 SocialNetwork ..> BadEntryException : throws
 SocialNetwork ..> MemberAlreadyExistsException : throws
+SocialNetwork ..> ItemBookAlreadyExistsException : throws
 
 @enduml

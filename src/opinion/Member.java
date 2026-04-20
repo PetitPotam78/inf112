@@ -2,6 +2,7 @@ package opinion;
 
 /**
  * Represents a member of the SocialNetwork.
+ * Responsible for identity storage and credential verification.
  */
 class Member {
 
@@ -10,7 +11,7 @@ class Member {
 	private String profile;
 
 	/**
-	 * @param login   the member's login
+	 * @param login    the member's login
 	 * @param password the member's password
 	 * @param profile  the member's profile description
 	 */
@@ -31,4 +32,5 @@ class Member {
 	String getProfile() {
 		return profile;
 	}
+
 }
