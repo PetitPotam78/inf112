@@ -13,8 +13,11 @@ import exceptions.NotMemberException;
 /**
  * Implementation of ISocialNetwork that manages members, books and films.
  *
- * This is the main class of the social network. It stores the data
- * and checks that everything we give it is valid before saving it.
+ * This class applies the Single Responsability Principle (SRP) :
+ * its only job is to orchestrate the collections of members and books
+ * (add, lookup, count). It does NOT know how a member or a book
+ * compares itself to others - that knowledge belongs to Member and Book
+ * (see Member.matches and Book.hasSameTitleAs).
  *
  * Responsabilities of this class :
  *   - manage members (adding, checking for duplicates)
@@ -112,10 +115,10 @@ public class SocialNetwork implements ISocialNetwork {
 		if (profile == null) {
 			throw new BadEntryException("invalid profil");
 		}
-		// we go through all members to check that the login is not already taken
-		// the comparison is case-insensitive and ignores leading/trailing spaces
+		// we ask each member if it has the same login (delegation to Member)
+		// SocialNetwork does not need to know how the comparison is done
 		for (Member m : members) {
-			if (login.trim().equalsIgnoreCase(m.getLogin().trim())) {
+			if (m.hasSameLoginAs(login)) {
 				throw new MemberAlreadyExistsException();
 			}
 		}
@@ -143,12 +146,11 @@ public class SocialNetwork implements ISocialNetwork {
 		loginCheck(login, password);
 		bookCheck(title, kind, author, nbPages);
 
-		// check that a member with this exact login and password exists
-		// if we dont find the pair, we throw a NotMember exception
+		// ask each member if the credentials match (delegation to Member)
+		// authentication logic lives in Member, not here
 		boolean memberFound = false;
 		for (Member m : members) {
-			if (login.trim().equalsIgnoreCase(m.getLogin().trim())
-					&& password.trim().equalsIgnoreCase(m.getPassword().trim())) {
+			if (m.matches(login, password)) {
 				memberFound = true;
 			}
 		}
@@ -156,10 +158,9 @@ public class SocialNetwork implements ISocialNetwork {
 			throw new NotMemberException("user do not exist");
 		}
 
-		// check that no book with the same title is already in the network
-		// comparison ignores case and extra spaces to avoid hidden duplicates
+		// ask each book if it has the same title (delegation to Book)
 		for (Book b : books) {
-			if (title.trim().equalsIgnoreCase(b.getTitle().trim())) {
+			if (b.hasSameTitleAs(title)) {
 				throw new ItemBookAlreadyExistsException();
 			}
 		}

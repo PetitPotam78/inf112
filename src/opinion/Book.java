@@ -63,4 +63,16 @@ public class Book {
 		return this.nbPages;
 	}
 
+	/**
+	 * Tells if this book has the same title as the one given.
+	 * Comparison ignores case and leading/trailing spaces, so that
+	 * "Dune", "DUNE" and " dune " are considered the same title.
+	 *
+	 * @param otherTitle the title to compare to
+	 * @return true if the titles match
+	 */
+	public boolean hasSameTitleAs(String otherTitle) {
+		return this.title.trim().equalsIgnoreCase(otherTitle.trim());
+	}
+
 }
