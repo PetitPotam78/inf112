@@ -25,6 +25,7 @@ public class SocialNetwork implements ISocialNetwork {
 	// this way if we want to change the min length of a login or password,
 	// we only have to change it in one place
 	private static final int MIN_LOGIN_LENGTH = 1;
+	private static final int MIN_TITLE_LENGTH = 1;
 	private static final int MIN_PASSWORD_LENGTH = 4;
 
 	/** List of members registred in the social network, never null */
@@ -83,7 +84,7 @@ public class SocialNetwork implements ISocialNetwork {
 	 * @throws BadEntryException if any of the fields is invalid
 	 */
 	public void bookCheck(String title, String kind, String author, int nbPages) throws BadEntryException {
-		if (title == null || title.trim().length() < MIN_LOGIN_LENGTH) {
+		if (title == null || title.trim().length() < MIN_TITLE_LENGTH) {
 			throw new BadEntryException("invalid title");
 		}
 		if (kind == null) {
@@ -162,6 +163,7 @@ public class SocialNetwork implements ISocialNetwork {
 
 		// everything is valid, we can add the book
 		books.add(new Book(title, kind, author, nbPages));
+		
 	}
 
 	@Override
@@ -176,7 +178,32 @@ public class SocialNetwork implements ISocialNetwork {
 	public float reviewItemBook(String login, String password, String title,
 			float mark, String comment) throws BadEntryException,
 			NotMemberException, NotItemException {
-		// TODO : book reviews are not implementd yet
+
+		Review review = null;
+		loginCheck(login, password);
+		if (title == null || title.trim().length() < MIN_TITLE_LENGTH) {
+			throw new BadEntryException("invalid title");
+		}
+		if (mark <= 0.0 || mark >= 5.0) {
+			throw new BadEntryException("invalid mark");
+		}
+		for (Member m : members) {
+			if (m.hasSameLoginAs(login)) {
+				review = new Review(mark, comment, m);
+				break;
+			}
+		}
+
+		for (Book b : books) {
+			if (b.hasSameTitleAs(title)) {
+				b.addReview(review);
+				break;
+			}
+		}
+
+
+
+
 		return 0;
 	}
 

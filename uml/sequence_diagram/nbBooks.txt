@@ -1,0 +1,26 @@
+@startuml nbBooks
+
+skinparam sequenceMessageAlign center
+skinparam responseMessageBelowArrow true
+
+' ============================================================
+' Participants
+' ============================================================
+participant "Caller\n(Test / Main)" as Caller
+participant "SocialNetwork"         as SN
+participant "Member (existing)"     as ME
+participant "Book (existing)"       as BE
+participant "Book (new)"            as BN
+
+== nbBooks() — Count books ==
+
+Caller -> SN : nbBooks()
+activate SN
+    note right of SN : returns books.size()
+SN --> Caller : 1
+deactivate SN
+
+SN --> Caller : "SocialNetwork : [1 membre(s), 0 movie(s), 1 book(s)]\nMembres : alice Books : Dune "
+deactivate SN
+
+@enduml

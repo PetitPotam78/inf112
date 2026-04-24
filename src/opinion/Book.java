@@ -1,5 +1,8 @@
 package opinion;
 
+import java.util.LinkedList;
+import java.util.List;
+
 /**
  * Represents a book in the social network.
  *
@@ -25,6 +28,8 @@ public class Book {
 	/** Number of pages, always strictly positive */
 	private int nbPages;
 
+	private List<Review> reviews;
+
 	/**
 	 * Creates a new book with all its informations.
 	 * Parameters must have been validated before calling this constructor.
@@ -39,6 +44,7 @@ public class Book {
 		this.kind = kind;
 		this.author = author;
 		this.nbPages = nbPages;
+		this.reviews = new LinkedList<Review>();
 	}
 
 	/** @return the book title */
@@ -59,6 +65,21 @@ public class Book {
 	/** @return the number of pages */
 	public int getNbPages() {
 		return this.nbPages;
+	}
+
+	public boolean hasSameReviewAuthor(Review review) {
+		for (Review r : reviews) {
+			if (r.getAuthor() == review.getAuthor()) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	public void editReview(){}
+
+	public void addReview(Review review) {
+		reviews.add(review);
 	}
 
 	/**

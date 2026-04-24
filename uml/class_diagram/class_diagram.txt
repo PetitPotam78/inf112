@@ -1,4 +1,4 @@
-@startuml diagramme_classes
+@startuml class_diagram
 
 skinparam classAttributeIconSize 0
 skinparam packageStyle rectangle
@@ -47,6 +47,11 @@ package "opinion" {
         + getNbPages() : int
     }
 
+    class Review {
+        - mark : float
+        - comment : String
+    }
+
 }
 
 package "exceptions" {
@@ -56,9 +61,12 @@ package "exceptions" {
 }
 
 SocialNetwork ..|> ISocialNetwork
-SocialNetwork "1" *-- "0..*" Member : members
+SocialNetwork "0..1" --> "0..*" Member : members
+SocialNetwork "0..1" --> "0..*" Book : books
 
-SocialNetwork "1" *-- "0..*" Book : books
+Book "0..1" --> "0..*" Review : reviews
+
+Review "0..*" --> "1" Member : author
 
 SocialNetwork ..> BadEntryException : throws
 SocialNetwork ..> MemberAlreadyExistsException : throws

@@ -1,0 +1,47 @@
+@startuml toString
+
+skinparam sequenceMessageAlign center
+skinparam responseMessageBelowArrow true
+
+' ============================================================
+' Participants
+' ============================================================
+participant "Caller\n(Test / Main)" as Caller
+participant "SocialNetwork"         as SN
+participant "Member (existing)"     as ME
+participant "Member (new)"          as MN
+
+
+' ============================================================
+' SECTION 4 : Network state inspection (toString)
+' ============================================================
+== toString() — Display network state ==
+
+Caller -> SN : toString()
+activate SN
+
+    SN -> SN : nbMembers()
+    SN -> SN : nbFilms()
+    SN -> SN : nbBooks()
+    note right of SN : returns books.size()
+
+    ' --- Iterate over members ---
+    loop for each Member m in members
+        SN -> ME : getLogin()
+        activate ME
+        ME --> SN : "alice"
+        deactivate ME
+    end
+
+    ' --- Iterate over books to build the string ---
+    loop for each Book b in books
+        SN -> BE : getTitle()
+        activate BE
+        BE --> SN : "Dune"
+        deactivate BE
+    end
+
+SN --> Caller : "SocialNetwork : [1 membre(s), 0 movie(s), 1 book(s)]\nMembres : alice Books : Dune "
+deactivate SN
+
+@enduml

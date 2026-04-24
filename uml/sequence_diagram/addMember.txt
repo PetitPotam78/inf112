@@ -1,4 +1,4 @@
-@startuml diagramme_sequence
+@startuml addMember
 
 skinparam sequenceMessageAlign center
 skinparam responseMessageBelowArrow true
@@ -11,10 +11,7 @@ participant "SocialNetwork"         as SN
 participant "Member (existing)"     as ME
 participant "Member (new)"          as MN
 
-' ============================================================
-' SECTION 1 : Adding a member — nominal case
-' ============================================================
-== addMember() — Nominal case ==
+== addMember() ==
 
 Caller -> SN : addMember("alice", "s3cr3t", "Cinephile")
 activate SN
@@ -47,35 +44,6 @@ activate SN
     note over SN : members.add(newMember)
 
 SN --> Caller : (void — success)
-deactivate SN
-
-
-' ============================================================
-' SECTION 4 : Network state inspection (toString)
-' ============================================================
-== toString() — Display network state ==
-
-Caller -> SN : toString()
-activate SN
-
-    SN -> SN : nbMembers()
-    note right of SN : returns members.size()
-
-    SN -> SN : nbFilms()
-    note right of SN : returns 0 (TODO)
-
-    SN -> SN : nbBooks()
-    note right of SN : returns 0 (TODO)
-
-    ' --- Iterate over members to build the string ---
-    loop for each Member m in members
-        SN -> MN : getLogin()
-        activate MN
-        MN --> SN : "alice"
-        deactivate MN
-    end
-
-SN --> Caller : "SocialNetwork : [1 member(s), 0 film(s), 0 book(s)]\nMembers : alice "
 deactivate SN
 
 @enduml
