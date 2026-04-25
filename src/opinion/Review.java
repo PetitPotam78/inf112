@@ -26,4 +26,12 @@ public class Review {
         return this.author;
     }
 
+    public void setMark(float mark) {
+        this.mark = mark;
+    }
+
+    public void setComment(String comment) {
+        this.comment = comment;
+    }
+
 }

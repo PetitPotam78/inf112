@@ -67,19 +67,36 @@ public class Book {
 		return this.nbPages;
 	}
 
-	public boolean hasSameReviewAuthor(Review review) {
-		for (Review r : reviews) {
-			if (r.getAuthor() == review.getAuthor()) {
+	public boolean hasSameReviewAuthor(Member author) {
+		for (Review r : this.reviews) {
+			if (r.getAuthor() == author) {
 				return true;
 			}
 		}
 		return false;
 	}
 
-	public void editReview(){}
+	public void editReview(Member author, float mark, String comment){
+		for (Review r : this.reviews) {
+			if (r.getAuthor() == author) {
+				r.setMark(mark);
+				r.setComment(comment);
+			}
+		}
+	}
 
 	public void addReview(Review review) {
 		reviews.add(review);
+	}
+
+	public float getMeanMark() {
+		float sum = 0;
+		int count = 0;
+		for (Review r : this.reviews) {
+			sum += r.getMark();
+			count ++;
+		}
+		return (sum / count);
 	}
 
 	/**

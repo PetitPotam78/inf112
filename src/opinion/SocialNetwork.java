@@ -180,6 +180,7 @@ public class SocialNetwork implements ISocialNetwork {
 			NotMemberException, NotItemException {
 
 		Review review = null;
+		Member author = null;
 		loginCheck(login, password);
 		if (title == null || title.trim().length() < MIN_TITLE_LENGTH) {
 			throw new BadEntryException("invalid title");
@@ -189,6 +190,7 @@ public class SocialNetwork implements ISocialNetwork {
 		}
 		for (Member m : members) {
 			if (m.hasSameLoginAs(login)) {
+				author = m;
 				review = new Review(mark, comment, m);
 				break;
 			}
@@ -196,21 +198,31 @@ public class SocialNetwork implements ISocialNetwork {
 
 		for (Book b : books) {
 			if (b.hasSameTitleAs(title)) {
-				b.addReview(review);
-				break;
+				if (b.hasSameReviewAuthor(author)) {
+					b.editReview(author, mark, comment);
+				} else {
+					b.addReview(review);
+				}
+				return b.getMeanMark();
+			} else {
+				throw new NotItemException("Book doesn't exist");
 			}
 		}
-
-
-
-
 		return 0;
 	}
 
 	@Override
 	public LinkedList<String> consultItems(String title) throws BadEntryException {
-		// TODO : item search is not implementd yet
-		return new LinkedList<String>();
+		if (title == null || title.trim().length() < MIN_TITLE_LENGTH) {
+			throw new BadEntryException("Title not instanciated or item doesn't exist");
+		}
+		String caracteristics;
+		LinkedList<String> itemsList = new LinkedList<String>();
+		for (Book b : books) {
+			caracteristics = "Name : " + b.getTitle() + "\nCategory : Book" + "\nMark : " + b.getMeanMark();
+			itemsList.add(caracteristics);
+		}
+		return itemsList;
 	}
 
 	/**
