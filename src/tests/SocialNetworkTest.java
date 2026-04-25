@@ -38,7 +38,17 @@ public class SocialNetworkTest {
 			testSuiteReport.add(tr);
 			System.out.println("\n\n **********************************************************************************************\n");
 
-			// TODO : add tests for films, reviews, consultItems, etc.
+			// test reviewing books
+			tr = ReviewItemBookTest.test();
+			testSuiteReport.add(tr);
+			System.out.println("\n\n **********************************************************************************************\n");
+
+			// test consulting items
+			tr = ConsultItemBookTest.test();
+			testSuiteReport.add(tr);
+			System.out.println("\n\n **********************************************************************************************\n");
+
+			// TODO : add tests for films when they are implemented
 
 			// print the global summary of all tests
 			System.out.println("Global tests results :   \n" + testSuiteReport);
