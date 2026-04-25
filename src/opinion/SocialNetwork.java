@@ -179,36 +179,42 @@ public class SocialNetwork implements ISocialNetwork {
 			float mark, String comment) throws BadEntryException,
 			NotMemberException, NotItemException {
 
-		Review review = null;
-		Member author = null;
+		// validate parameters first
 		loginCheck(login, password);
 		if (title == null || title.trim().length() < MIN_TITLE_LENGTH) {
 			throw new BadEntryException("invalid title");
 		}
-		if (mark <= 0.0 || mark >= 5.0) {
+		if (mark < 0.0f || mark > 5.0f) {
 			throw new BadEntryException("invalid mark");
 		}
+		if (comment == null) {
+			throw new BadEntryException("invalid comment");
+		}
+
+		// authenticate the member (login AND password must match)
+		Member author = null;
 		for (Member m : members) {
-			if (m.hasSameLoginAs(login)) {
+			if (m.matches(login, password)) {
 				author = m;
-				review = new Review(mark, comment, m);
 				break;
 			}
 		}
+		if (author == null) {
+			throw new NotMemberException("user does not exist or wrong password");
+		}
 
+		// find the book; only throw NotItem after scanning the whole list
 		for (Book b : books) {
 			if (b.hasSameTitleAs(title)) {
 				if (b.hasSameReviewAuthor(author)) {
 					b.editReview(author, mark, comment);
 				} else {
-					b.addReview(review);
+					b.addReview(new Review(mark, comment, author));
 				}
 				return b.getMeanMark();
-			} else {
-				throw new NotItemException("Book doesn't exist");
 			}
 		}
-		return 0;
+		throw new NotItemException("Book doesn't exist");
 	}
 
 	@Override
@@ -216,11 +222,13 @@ public class SocialNetwork implements ISocialNetwork {
 		if (title == null || title.trim().length() < MIN_TITLE_LENGTH) {
 			throw new BadEntryException("Title not instanciated or item doesn't exist");
 		}
-		String caracteristics;
 		LinkedList<String> itemsList = new LinkedList<String>();
 		for (Book b : books) {
-			caracteristics = "Name : " + b.getTitle() + "\nCategory : Book" + "\nMark : " + b.getMeanMark();
-			itemsList.add(caracteristics);
+			if (b.hasSameTitleAs(title)) {
+				itemsList.add("Name : " + b.getTitle()
+						+ "\nCategory : Book"
+						+ "\nMark : " + b.getMeanMark());
+			}
 		}
 		return itemsList;
 	}
