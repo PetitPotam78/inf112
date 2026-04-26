@@ -6,44 +6,55 @@ skinparam responseMessageBelowArrow true
 ' ============================================================
 ' Participants
 ' ============================================================
-participant "Caller\n(Test / Main)" as Caller
-participant "SocialNetwork"         as SN
-participant "Member (existing)"     as ME
-participant "Member (new)"          as MN
+actor "Utilisateur" as user
+participant "sn : SocialNetwork" as sn
+participant "m : Member" as m
 
-== addMember() ==
+== addMember ==
 
-Caller -> SN : addMember("alice", "s3cr3t", "Cinephile")
-activate SN
+user -> sn : addMember(login, password, profile)
+activate sn
 
-    ' --- Input parameter validation ---
-    note over SN
-        Check: login n
-        ot null and length >= 1
-        Check: password not null and length >= 4
-        Check: profile not null
-    end note
+    ' --- Validation des credentials (auto-appels) ---
+    sn -> sn : checkCredentials(login, password)
+    activate sn
+        sn -> sn : checkString(login, 1, "invalid login")
+        activate sn
+        sn --> sn : void
+        deactivate sn
 
-    ' --- Iterate over the list to detect a duplicate ---
-    loop for each Member m in members
-        SN -> ME : getLogin()
-        activate ME
-        ME --> SN : "bob"
-        deactivate ME
-        note right of SN : "alice".equalsIgnoreCase("bob") → false\nContinue the loop
+        sn -> sn : checkString(password, 4, "invalid password")
+        activate sn
+        sn --> sn : void
+        deactivate sn
+    sn --> sn : void
+    deactivate sn
+
+    ' --- Validation du profil ---
+    alt profile == null
+        sn --> user : throw BadEntryException
     end
 
-    ' --- No duplicate: create the new member ---
-    SN -> MN ** : new Member("alice", "s3cr3t", "Cinephile")
-    activate MN
-    note right of MN : Constructor stores\nlogin, password, profile
-    MN --> SN : (instance created)
-    deactivate MN
+    ' --- Vérification d'unicité du login ---
+    loop for each m in members
+        sn -> m : hasSameLoginAs(login)
+        activate m
+        m --> sn : boolean
+        deactivate m
 
-    ' --- Add to the internal list ---
-    note over SN : members.add(newMember)
+        alt hasSameLoginAs == true
+            sn --> user : throw MemberAlreadyExistsException
+        end
+    end
 
-SN --> Caller : (void — success)
-deactivate SN
+    ' --- Création et enregistrement du membre ---
+    create "newMember : Member" as newMember
+    sn -> newMember : Member(login, password, profile)
+    activate newMember
+    newMember --> sn : void
+    deactivate newMember
+
+sn --> user : void
+deactivate sn
 
 @enduml

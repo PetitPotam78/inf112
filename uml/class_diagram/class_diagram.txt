@@ -24,6 +24,8 @@ package "opinion" {
         + nbBooks() : int
         + addMember(login : String, password : String, profile : String) : void
         + addItemBook(login : String, password : String, title: String, kind : String, author : String, nbPages : int)
+        + eviewItemBook(login : String, password : String, title : String, mark : float, comment : String) : float
+        + consultItems(title : String) : LinkedList<String>
         + toString() : String
     }
 
@@ -31,9 +33,12 @@ package "opinion" {
         - login : String
         - password : String
         - profile : String
+        - Member(login : String, password : String, profile : String)
         + getLogin() : String
         + getPassword() : String
         + getProfile() : String
+        + hasSameLoginAs(login : String) : boolean
+        + hasSameCredentials(login : String, password String) : boolean
     }
 
     class Book {
@@ -41,15 +46,29 @@ package "opinion" {
         - kind : String
         - author : String
         - nbPages : int
+        + Book(title : String, kinkd : String, author : String, nbPages : int)
         + getTitle() : String
         + getKind() : String
         + getAuthor() : String
         + getNbPages() : int
+        + hasSameTitleAs(title : String) : boolean
+        + hasSameReviewAuthor(author : Member) : boolean
+        + addReview(review : Review)
+        + editReview(author : Member, mark : float, comment : String)
+        + getMeanMark()
     }
 
     class Review {
         - mark : float
         - comment : String
+        + Review(mark : float, comment : String, author : Member)
+        + getMark() : float
+        + getComment() : String
+        + getAuthor : Member
+        + setMark(mark : float)
+        + setComment(comment : String)
+
+
     }
 
 }
@@ -57,7 +76,9 @@ package "opinion" {
 package "exceptions" {
     class BadEntryException
     class MemberAlreadyExistsException
+    class NotMemberException
     class ItemBookAlreadyExistsException
+    class NotItemException
 }
 
 SocialNetwork ..|> ISocialNetwork
@@ -70,6 +91,8 @@ Review "0..*" --> "1" Member : author
 
 SocialNetwork ..> BadEntryException : throws
 SocialNetwork ..> MemberAlreadyExistsException : throws
+SocialNetwork ..> NotMemberException : throws
 SocialNetwork ..> ItemBookAlreadyExistsException : throws
+SocialNetwork ..> NotItemException : throws
 
 @enduml

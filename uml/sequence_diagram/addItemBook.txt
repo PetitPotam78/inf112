@@ -6,61 +6,97 @@ skinparam responseMessageBelowArrow true
 ' ============================================================
 ' Participants
 ' ============================================================
-participant "Caller\n(Test / Main)" as Caller
-participant "SocialNetwork"         as SN
-participant "Member (existing)"     as ME
-participant "Book (existing)"       as BE
-participant "Book (new)"            as BN
+actor "Utilisateur" as user
+participant "sn : SocialNetwork" as sn
+participant "m : Member" as m
+participant "b : Book" as b
 
-== addItemBook() ==
+== addItemBook ==
 
-Caller -> SN : addItemBook("alice", "s3cr3t",\n"Dune", "SF", "Herbert", 680)
-activate SN
+user -> sn : addItemBook(login, password, title, kind, author, nbPages)
+activate sn
 
-    ' --- Input parameter validation ---
-    SN -> SN : loginCheck("alice", "s3cr3t")
-    note right of SN
-        Check: login not null and length >= 1
-        Check: password not null and length >= 4
-    end note
+    ' --- Validation des credentials (auto-appels) ---
+    sn -> sn : checkCredentials(login, password)
+    activate sn
+        sn -> sn : checkString(login, 1, "invalid login")
+        activate sn
+        sn --> sn : void
+        deactivate sn
 
-    SN -> SN : bookCheck("Dune", "SF", "Herbert", 680)
-    note right of SN
-        Check: title not null and length >= 1
-        Check: kind not null
-        Check: author not null
-        Check: nbPages > 0
-    end note
+        sn -> sn : checkString(password, 4, "invalid password")
+        activate sn
+        sn --> sn : void
+        deactivate sn
+    sn --> sn : void
+    deactivate sn
 
-    ' --- Member authentication ---
-    loop for each Member m in members
-        SN -> ME : matches("alice", "s3cr3t")
-        activate ME
-        ME --> SN : true
-        deactivate ME
-    end
-    note right of SN : memberFound = true
-
-    ' --- Duplicate book detection ---
-    loop for each Book b in books
-        SN -> BE : hasSameTitleAs("Dune")
-        activate BE
-        note right of BE : "Foundation".trim()\n.equalsIgnoreCase("Dune".trim())\n→ false
-        BE --> SN : false
-        deactivate BE
+    alt login ou password invalide
+        sn --> user : throw BadEntryException
     end
 
-    ' --- No duplicate: create the new book ---
-    SN -> BN ** : new Book("Dune", "SF", "Herbert", 680)
-    activate BN
-    note right of BN : Constructor stores\ntitle, kind, author, nbPages
-    BN --> SN : (instance created)
-    deactivate BN
+    ' --- Validation des champs du livre (auto-appels) ---
+    sn -> sn : checkBookFields(title, kind, author, nbPages)
+    activate sn
+        sn -> sn : checkString(title, 1, "invalid title")
+        activate sn
+        sn --> sn : void
+        deactivate sn
 
-    ' --- Add to the internal list ---
-    note over SN : books.add(newBook)
+        note right of sn
+            Vérifie également :
+            kind != null
+            author != null
+            nbPages > 0
+        end note
+    sn --> sn : void
+    deactivate sn
 
-SN --> Caller : (void — success)
-deactivate SN
+    alt title/kind/author invalide ou nbPages <= 0
+        sn --> user : throw BadEntryException
+    end
+
+    ' --- Authentification du membre ---
+    sn -> sn : getAuthenticatedMember(login, password)
+    activate sn
+        loop for each m in members
+            sn -> m : hasSameCredentials(login, password)
+            activate m
+            m --> sn : boolean
+            deactivate m
+
+            alt hasSameCredentials == true
+                sn --> sn : return m
+            end
+        end
+
+        alt aucun membre trouvé
+            sn --> user : throw NotMemberException
+        end
+    deactivate sn
+
+    ' --- Vérification d'unicité du titre ---
+    loop for each b in books
+        sn -> b : hasSameTitleAs(title)
+        activate b
+        b --> sn : boolean
+        deactivate b
+
+        alt hasSameTitleAs == true
+            sn --> user : throw ItemBookAlreadyExistsException
+        end
+    end
+
+    ' --- Création et enregistrement du livre ---
+    create "newBook : Book" as newBook
+    sn -> newBook : Book(title, kind, author, nbPages)
+    activate newBook
+    newBook --> sn : void
+    deactivate newBook
+
+    note over sn : books.add(newBook)
+
+sn --> user : void
+deactivate sn
 
 @enduml

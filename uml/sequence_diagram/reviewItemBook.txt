@@ -1,0 +1,125 @@
+@startuml reviewItemBook
+
+skinparam sequenceMessageAlign center
+skinparam responseMessageBelowArrow true
+
+' ============================================================
+' Participants
+' ============================================================
+actor "Utilisateur" as user
+participant "sn : SocialNetwork" as sn
+participant "m : Member" as m
+participant "b : Book" as b
+
+== reviewItemBook ==
+
+user -> sn : reviewItemBook(login, password, title, mark, comment)
+activate sn
+
+    ' --- Validation des credentials ---
+    sn -> sn : checkCredentials(login, password)
+    activate sn
+        sn -> sn : checkString(login, 1, "invalid login")
+        activate sn
+        sn --> sn : void
+        deactivate sn
+
+        sn -> sn : checkString(password, 4, "invalid password")
+        activate sn
+        sn --> sn : void
+        deactivate sn
+    sn --> sn : void
+    deactivate sn
+
+    alt login ou password invalide
+        sn --> user : throw BadEntryException
+    end
+
+    ' --- Validation du titre ---
+    sn -> sn : checkString(title, 1, "invalid title")
+    activate sn
+    sn --> sn : void
+    deactivate sn
+
+    alt title invalide (null ou vide)
+        sn --> user : throw BadEntryException
+    end
+
+    ' --- Validation de la note ---
+    alt mark < 0.0 ou mark > 5.0
+        sn --> user : throw BadEntryException
+    end
+
+    ' --- Validation du commentaire ---
+    alt comment == null
+        sn --> user : throw BadEntryException
+    end
+
+    ' --- Authentification du membre ---
+    sn -> sn : getAuthenticatedMember(login, password)
+    activate sn
+        loop for each m in members
+            sn -> m : hasSameCredentials(login, password)
+            activate m
+            m --> sn : boolean
+            deactivate m
+
+            alt hasSameCredentials == true
+                sn --> sn : return m
+            end
+        end
+
+        alt aucun membre trouvé
+            sn --> user : throw NotMemberException
+        end
+    deactivate sn
+
+    ' --- Recherche du livre et ajout / mise à jour de la review ---
+    loop for each b in books
+        sn -> b : hasSameTitleAs(title)
+        activate b
+        b --> sn : boolean
+        deactivate b
+
+        alt hasSameTitleAs == true
+
+            sn -> b : hasSameReviewAuthor(author)
+            activate b
+            b --> sn : boolean
+            deactivate b
+
+            alt hasSameReviewAuthor == true
+                ' Mise à jour de la review existante
+                sn -> b : editReview(author, mark, comment)
+                activate b
+                b --> sn : void
+                deactivate b
+            else
+                ' Création et ajout d'une nouvelle review
+                create "newReview : Review" as newReview
+                sn -> newReview : Review(mark, comment, author)
+                activate newReview
+                newReview --> sn : void
+                deactivate newReview
+
+                sn -> b : addReview(newReview)
+                activate b
+                b --> sn : void
+                deactivate b
+            end
+
+            sn -> b : getMeanMark()
+            activate b
+            b --> sn : float
+            deactivate b
+
+            sn --> user : float (moyenne mise à jour)
+        end
+    end
+
+    ' --- Aucun livre trouvé ---
+    sn --> user : throw NotItemException
+
+deactivate sn
+
+@enduml

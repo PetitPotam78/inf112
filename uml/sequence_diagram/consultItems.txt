@@ -1,0 +1,61 @@
+@startuml consultItems
+
+skinparam sequenceMessageAlign center
+skinparam responseMessageBelowArrow true
+
+' ============================================================
+' Participants
+' ============================================================
+actor "Utilisateur" as user
+participant "sn : SocialNetwork" as sn
+participant "b : Book" as b
+
+== consultItems ==
+
+user -> sn : consultItems(title)
+activate sn
+
+    ' --- Validation du titre ---
+    sn -> sn : checkString(title, 1, "Title not instanciated or item doesn't exist")
+    activate sn
+    sn --> sn : void
+    deactivate sn
+
+    alt title invalide (null ou vide)
+        sn --> user : throw BadEntryException
+    end
+
+    ' --- Initialisation de la liste résultat ---
+    note over sn : itemsList = new LinkedList<String>()
+
+    ' --- Parcours des livres ---
+    loop for each b in books
+        sn -> b : hasSameTitleAs(title)
+        activate b
+        b --> sn : boolean
+        deactivate b
+
+        alt hasSameTitleAs == true
+            sn -> b : getTitle()
+            activate b
+            b --> sn : String
+            deactivate b
+
+            sn -> b : getMeanMark()
+            activate b
+            b --> sn : float
+            deactivate b
+
+            note right of sn
+                itemsList.add(
+                  "Name : " + title +
+                  "\nCategory : Book" +
+                  "\nMark : " + meanMark)
+            end note
+        end
+    end
+
+sn --> user : itemsList (LinkedList<String>)
+deactivate sn
+
+@enduml

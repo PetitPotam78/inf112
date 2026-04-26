@@ -1,4 +1,4 @@
-@startuml nbBooks
+@startuml nbMembers
 
 skinparam sequenceMessageAlign center
 skinparam responseMessageBelowArrow true
@@ -9,12 +9,12 @@ skinparam responseMessageBelowArrow true
 actor "Utilisateur" as user
 participant "sn : SocialNetwork" as sn
 
-== nbBooks ==
+== nbMembers ==
 
-user -> sn : nbBooks()
+user -> sn : nbMembers()
 activate sn
 
-    note right of sn : return books.size()
+    note right of sn : return members.size()
 
 sn --> user : int
 deactivate sn
